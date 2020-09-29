@@ -322,7 +322,7 @@ function clone_candidates(circuit::Node)::Dict{Node, Vector{Node}}
 
     # Find candidates
     candidates = filter(p->(length(last(p)) == 2), parents) # Set of AND gates shared by exactly 2 OR gates
-    candidates
+    return [(v[1], v[2], k) for (k, v) in candidates]
 end
 
 """
@@ -346,17 +346,36 @@ function split_step(circuit::Node; loss=random_split, depth=0, sanity_check=true
 end
 
 """
+Clone Step
+"""
+function clone_step(circuit::Node; loss=random_clone, depth=0, sanity_check=true)
+    and1, and2, or = loss(circuit)
+    clone(circuit, and1, and2, or; depth=depth)
+end
+
+"""
 Structure learning manager
 """
 function struct_learn(circuit::Node; 
-    primitives=[split_step], 
-    kwargs=Dict(split_step=>(loss=random_split, depth=0)),
+    primitives=[split_step, clone_step], 
+    kwargs=Dict(split_step=>(loss=random_split, depth=0),
+                clone_step=>(loss=random_clone, depth=0)),
     maxiter=typemax(Int), stop::Function=x->false)
 
     for iter in 1 : maxiter
-        primiteve_step = rand(primitives)
+        # primiteve_step = rand(primitives)
+        primiteve_step = primitives[1]
+        if iter % 2 == 0
+            primiteve_step = primitives[2]
+        end
+
         kwarg = kwargs[primiteve_step]
+
+        t0 = Base.time_ns()
         c2, _ = primiteve_step(circuit; kwarg...)
+        t1 = (Base.time_ns() - t0)/(1.0e9)
+        println("Time : $t1")
+
         if stop(c2)
             return c2
         end
@@ -377,8 +396,15 @@ function clone(root::Node, and1::Node, and2::Node, or::Node; depth=1)
     @assert and1 in and_nodes(root) && and2 in and_nodes(root) && or in or_nodes(root)
 
     # clone
+    new_and2 = nothing
     new_or = deepcopy(or, depth; cache=false)
     new_and2 = conjoin([[new_or]; filter(c -> c != or, children(and2))])
+
+    if or == children(and1)[1]
+        new_and2 = conjoin([[new_or]; filter(c -> c != or, children(and2))])
+    else
+        new_and2 = conjoin([filter(c -> c != or, children(and2))..., new_or])
+    end
 
     replace_node(root, and2, new_and2)
 end
