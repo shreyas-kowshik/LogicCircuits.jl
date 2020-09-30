@@ -135,15 +135,15 @@ end
     @test num_nodes(c1) == num_nodes(c2) < num_nodes(c3) < num_nodes(c4)
 end
 
-@testset "Merge test" begin
-    n0 = little_3var()
-    or1 = n0.children[1].children[2]
-    or2 = n0.children[2].children[2]
-    n1 = merge(n0, or1, or2)
-    @test n0.children[1].children[2] != n0.children[2].children[2]
-    @test n1.children[1].children[2] == n1.children[2].children[2]
-    @test num_nodes(n1) == (num_nodes(n0) - 1)
-end
+# @testset "Merge test" begin
+#     n0 = little_3var()
+#     or1 = n0.children[1].children[2]
+#     or2 = n0.children[2].children[2]
+#     n1 = merge(n0, or1, or2)
+#     @test n0.children[1].children[2] != n0.children[2].children[2]
+#     @test n1.children[1].children[2] == n1.children[2].children[2]
+#     @test num_nodes(n1) == (num_nodes(n0) - 1)
+# end
 
 @testset "Clone test" begin
     lit1 = compile(PlainLogicCircuit, Lit(1))

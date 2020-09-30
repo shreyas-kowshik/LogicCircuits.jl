@@ -1,6 +1,6 @@
 export smooth, forget, propagate_constants, deepcopy, condition, replace_node, 
     split, clone, merge, split_candidates, random_split, split_step, struct_learn,
-    clone_candidates 
+    clone_candidates , clone_step
 
 """
     smooth(root::Node)::Node
@@ -287,7 +287,7 @@ function split_candidates(circuit::Node)::Tuple{Vector{Tuple{Node, Node}}, Dict{
     candidates, scope
 end
 
-function clone_candidates(circuit::Node)::Dict{Node, Vector{Node}}
+function clone_candidates(circuit::Node)::Array{Tuple{Node,Node,Node},1}
     candidates = Dict{Node, Vector{Node}}()
     parents = Dict{Node, Vector{Node}}()
 
@@ -322,7 +322,7 @@ function clone_candidates(circuit::Node)::Dict{Node, Vector{Node}}
 
     # Find candidates
     candidates = filter(p->(length(last(p)) == 2), parents) # Set of AND gates shared by exactly 2 OR gates
-    return [(v[1], v[2], k) for (k, v) in candidates]
+    return [(k, v[1], v[2]) for (k, v) in candidates]
 end
 
 """
@@ -349,7 +349,16 @@ end
 Clone Step
 """
 function clone_step(circuit::Node; loss=random_clone, depth=0, sanity_check=true)
-    and1, and2, or = loss(circuit)
+    or, and1, and2 = loss(circuit)
+
+    if or == nothing || and1 == nothing || and2 == nothing
+        return circuit
+    end
+
+    @assert or != nothing "Or is nothing"
+    @assert and1 != nothing "And1 is nothing"
+    @assert and2 != nothing "And2 is nothing"
+
     clone(circuit, and1, and2, or; depth=depth)
 end
 
@@ -365,16 +374,17 @@ function struct_learn(circuit::Node;
     for iter in 1 : maxiter
         # primiteve_step = rand(primitives)
         primiteve_step = primitives[1]
-        if iter % 2 == 0
-            primiteve_step = primitives[2]
-        end
+        # if iter % 2 == 0
+        #     println("Doing Clone...")
+        #     primiteve_step = primitives[2]
+        # end
 
         kwarg = kwargs[primiteve_step]
 
-        t0 = Base.time_ns()
+        # t0 = Base.time_ns()
         c2, _ = primiteve_step(circuit; kwarg...)
-        t1 = (Base.time_ns() - t0)/(1.0e9)
-        println("Time : $t1")
+        # t1 = (Base.time_ns() - t0)/(1.0e9)
+        # println("Time : $t1")
 
         if stop(c2)
             return c2
