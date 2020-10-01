@@ -381,10 +381,10 @@ function struct_learn(circuit::Node;
 
         kwarg = kwargs[primiteve_step]
 
-        # t0 = Base.time_ns()
+        t0 = Base.time_ns()
         c2, _ = primiteve_step(circuit; kwarg...)
-        # t1 = (Base.time_ns() - t0)/(1.0e9)
-        # println("Time : $t1")
+        t1 = (Base.time_ns() - t0)/(1.0e9)
+        println("Time : $t1")
 
         if stop(c2)
             return c2
