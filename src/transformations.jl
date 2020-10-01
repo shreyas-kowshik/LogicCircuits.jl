@@ -408,7 +408,6 @@ function clone(root::Node, and1::Node, and2::Node, or::Node; depth=1)
     # clone
     new_and2 = nothing
     new_or = deepcopy(or, depth; cache=false)
-    new_and2 = conjoin([[new_or]; filter(c -> c != or, children(and2))])
 
     if or == children(and1)[1]
         new_and2 = conjoin([[new_or]; filter(c -> c != or, children(and2))])
