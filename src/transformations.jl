@@ -374,10 +374,10 @@ function struct_learn(circuit::Node;
     for iter in 1 : maxiter
         # primiteve_step = rand(primitives)
         primiteve_step = primitives[1]
-        # if iter % 2 == 0
-        #     println("Doing Clone...")
-        #     primiteve_step = primitives[2]
-        # end
+        if iter % 2 == 0
+            println("Doing Clone...")
+            primiteve_step = primitives[2]
+        end
 
         kwarg = kwargs[primiteve_step]
 
