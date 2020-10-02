@@ -350,17 +350,17 @@ end
 Clone Step
 """
 function clone_step(circuit::Node; loss=random_clone, depth=0, sanity_check=true)
-    or, and1, and2 = loss(circuit)
+    score, or, and1, and2 = loss(circuit)
 
     if or == nothing || and1 == nothing || and2 == nothing
-        return circuit
+        return circuit, -1.0, -1
     end
 
     @assert or != nothing "Or is nothing"
     @assert and1 != nothing "And1 is nothing"
     @assert and2 != nothing "And2 is nothing"
 
-    clone(circuit, and1, and2, or; depth=depth)
+    clone(circuit, and1, and2, or; depth=depth), score, num_nodes(or)
 end
 
 """
