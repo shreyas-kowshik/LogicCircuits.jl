@@ -342,6 +342,11 @@ Split step
 """
 function split_step(circuit::Node; loss=random_split, depth=0, sanity_check=true)
     score, (or, and), var = loss(circuit)
+
+    if or == nothing || and == nothing || var == nothing
+        return (circuit, circuit), -1, -1, -1
+    end
+
     edge = (or, and)
     split(circuit, edge, var; depth=depth, sanity_check=sanity_check), score, var2lit(var), num_nodes(or)
 end
